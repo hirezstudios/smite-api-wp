@@ -149,3 +149,5 @@ This instance, then, can be used for calling methods that return data analogous 
 
 ### Managing Temporary Storage
 
+On the plugin's settings page, you can adjust how long responses are cached locally before Wordpress will make another request. This caching mechanism uses the [WP Transient API](https://codex.wordpress.org/Transients_API).
+
