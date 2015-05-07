@@ -306,6 +306,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod, $url, $transientExpiry);
     }
+    // use function get_data_used as getDataUsed
+    function getDataUsed() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_data_used", $funcargs);
+    }
     /**
     * Get Demo Details
     * /getdemodetails[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{match_id}
@@ -328,6 +333,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$matchid, $url, $transientExpiry);
+    }
+    // use function get_demo_details as getDemoDetails
+    function getDemoDetails() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_demo_details", $funcargs);
     }
     /**
     * Get Match Details
@@ -352,6 +362,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$matchid, $url, $transientExpiry);
     }
+    // use function get_match_details as getMatchDetails
+    function getMatchDetails() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_match_details", $funcargs);
+    }
     /**
     * Get Match Player Details
     * /getmatchplayerdetails[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{match_id}
@@ -374,6 +389,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$matchid, $url, $transientExpiry);
+    }
+    // use function get_match_player_details as getMatchPlayerDetails
+    function getMatchPlayerDetails() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_match_player_details", $funcargs);
     }
     /**
     * Get Gods
@@ -399,6 +419,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$lang, $url, $transientExpiry);
     }
+    // use function get_gods as getGods
+    function getGods() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_gods", $funcargs);
+    }
     /**
     * Get Items
     * /getitems[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{languagecode}
@@ -422,6 +447,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$lang, $url, $transientExpiry);
+    }
+    // use function get_items as getItems
+    function getItems() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_items", $funcargs);
     }
     /**
     * Get God Recommended Items
@@ -450,6 +480,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$god_id.'_'.$lang, $url, $transientExpiry);
     }
+    // use function get_god_recommended_items as getGodRecommendedItems
+    function getGodRecommendedItems() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_god_recommended_items", $funcargs);
+    }
     /**
     * Get eSports Pro League Details
     * /getesportsproleaguedetails[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}
@@ -469,6 +504,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod, $url, $transientExpiry);
+    }
+    // use function get_esports_pro_league_details as getESportsProLeagueDetails
+    function getESportsProLeagueDetails() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_esports_pro_league_details", $funcargs);
     }
     /**
     * Get Friends
@@ -493,6 +533,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
     }
+    // use function get_friends as getFriends
+    function getFriends() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_friends", $funcargs);
+    }
     /**
     * Get Player
     * /getplayer[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{playerName}
@@ -515,6 +560,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
+    }
+    // use function get_player as getPlayer
+    function getPlayer() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_player", $funcargs);
     }
     /**
     * Get Player Status
@@ -555,6 +605,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $playerStatus[0]->{'status_label'} = $statusLabel;
       return $playerStatus;
     }
+    // use function get_player_status as getPlayerStatus
+    function getPlayerStatus() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_player_status", $funcargs);
+    }
     /**
     * Get Match History
     * /getmatchhistory[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{player}
@@ -578,6 +633,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
     }
+    // use function get_match_history as getMatchHistory
+    function getMatchHistory() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_match_history", $funcargs);
+    }
     /**
     * Get God Ranks
     * /getgodranks[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{player}
@@ -600,6 +660,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
+    }
+    // use function get_god_ranks as getGodRanks
+    function getGodRanks() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_god_ranks", $funcargs);
     }
     /**
     * Get Match IDs by Queue
@@ -626,6 +691,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$queue_id.'_'.$date.'_'.$hour, $url, $transientExpiry);
     }
+    // use function get_match_ids_by_queue as getMatchIDsByQueue
+    function getMatchIDsByQueue() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_match_ids_by_queue", $funcargs);
+    }
     /**
     * Get League Leaderboard
     * /getleagueleaderboard[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{queue}/{tier}/{season}
@@ -647,6 +717,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$queue_id.'_'.$tier.'_'.$season, $url, $transientExpiry);
     }
+    // use function get_league_leaderboard as getLeagueLeaderboard
+    function getLeagueLeaderboard() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_league_leaderboard", $funcargs);
+    }
     /**
     * Get League Seasons
     * /getleagueseasons[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{queue}
@@ -666,6 +741,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$queue_id, $url, $transientExpiry);
+    }
+    // use function get_league_seasons as getLeagueSeasons
+    function getLeagueSeasons() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_league_seasons", $funcargs);
     }
     /**
     * Get Queue Stats
@@ -690,6 +770,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$player_id.'_'.$queue_id, $url, $transientExpiry);
     }
+    // use function get_queue_stats as getQueueStatus
+    function getQueueStatus() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_queue_stats", $funcargs);
+    }
     /**
     * Search Teams
     * /searchteams[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{searchTeam}
@@ -712,6 +797,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$search_string, $url, $transientExpiry);
+    }
+    // use function search_teams as searchTerms
+    function searchTerms() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("search_teams", $funcargs);
     }
     /**
     * Get Team Details
@@ -736,6 +826,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$clan_id, $url, $transientExpiry);
     }
+    // use function get_team_details as getTeamDetails
+    function getTeamDetails() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_team_details", $funcargs);
+    }
     /**
     * Get Team Match History
     * /getteammatchhistory[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{clanid}
@@ -758,6 +853,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod.'_'.$clan_id, $url, $transientExpiry);
+    }
+    // use function get_team_match_history as getTeamMatchHistory
+    function getTeamMatchHistory() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_team_match_history", $funcargs);
     }
     /**
     * Get Team Players
@@ -782,6 +882,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       
       return $this->api_transaction($apiMethod.'_'.$clan_id, $url, $transientExpiry);
     }
+    // use function get_team_players as getTeamPlayers
+    function getTeamPlayers() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_team_players", $funcargs);
+    }
     /**
     * Get Top Matches
     * /gettopmatches[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}
@@ -801,6 +906,11 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
       return $this->api_transaction($apiMethod, $url, $transientExpiry);
+    }
+    // use function get_top_matches as getTopMatches
+    function getTopMatches() { 
+      $funcargs = func_get_args();
+      return call_user_func_array("get_top_matches", $funcargs);
     }
     
   }
