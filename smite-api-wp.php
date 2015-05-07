@@ -61,7 +61,6 @@ function register_smiteapi_settings() {
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getplayerstatus_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getqueuestats_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getteamdetails_exp' );
-	register_setting( 'smiteapi-settings-group', 'sapi_tran_getteammatchhistory_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getteamplayers_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_gettopmatches_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_searchteams_exp' );
@@ -170,10 +169,6 @@ function smiteapi_settings_page() {
           <tr valign="top">
             <th scope="row">cache responses from <strong>getteamdetails/</strong> for:</th>
             <td><input type="text" name="sapi_tran_getteamdetails_exp" value="<?php echo esc_attr( get_option('sapi_tran_getteamdetails_exp') ); ?>" /></td>
-          </tr>
-          <tr valign="top">
-            <th scope="row">cache responses from <strong>getteammatchhistory/</strong> for:</th>
-            <td><input type="text" name="sapi_tran_getteammatchhistory_exp" value="<?php echo esc_attr( get_option('sapi_tran_getteammatchhistory_exp') ); ?>" /></td>
           </tr>
           <tr valign="top">
             <th scope="row">cache responses from <strong>getteamplayers/</strong> for:</th>
@@ -830,34 +825,6 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     function getTeamDetails() { 
       $funcargs = func_get_args();
       return call_user_func_array("get_team_details", $funcargs);
-    }
-    /**
-    * Get Team Match History
-    * /getteammatchhistory[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{clanid}
-    * Gets recent matches and high level match statistics for a particular clan/team.
-    **/
-    public function get_team_match_history($clan_id) {
-      // method variables
-      $apiMethod = 'getteammatchhistory';
-      if ( !$clan_id ) {
-        return $this->init_wp_error( 'Missing Argument', 'a clan_id is required.' );
-      }
-      
-      // encapsulated variable refs
-      $baseURL = $this->baseURL;
-      $responseType = $this->responseType;
-      $devID = $this->devID;
-      $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$clan_id;
-      
-      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
-      return $this->api_transaction($apiMethod.'_'.$clan_id, $url, $transientExpiry);
-    }
-    // use function get_team_match_history as getTeamMatchHistory
-    function getTeamMatchHistory() { 
-      $funcargs = func_get_args();
-      return call_user_func_array("get_team_match_history", $funcargs);
     }
     /**
     * Get Team Players
