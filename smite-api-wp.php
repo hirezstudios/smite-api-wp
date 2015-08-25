@@ -49,8 +49,6 @@ function register_smiteapi_settings() {
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getdemodetails_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getesportsproleaguedetails_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getfriends_exp' );
-	register_setting( 'smiteapi-settings-group', 'sapi_tran_getplayerfriendsonline_exp' );
-	register_setting( 'smiteapi-settings-group', 'sapi_tran_getplayerfriendsonlinexbox_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgodranks_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgods_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgodrecommendeditems_exp' );
@@ -117,14 +115,6 @@ function smiteapi_settings_page() {
           <tr valign="top">
             <th scope="row">cache responses from <strong>getfriends/</strong> for:</th>
             <td><input type="text" name="sapi_tran_getfriends_exp" value="<?php echo esc_attr( get_option('sapi_tran_getfriends_exp') ); ?>" /></td>
-          </tr>
-          <tr valign="top">
-            <th scope="row">cache responses from <strong>getplayerfriendsonline/</strong> for:</th>
-            <td><input type="text" name="sapi_tran_getplayerfriendsonline_exp" value="<?php echo esc_attr( get_option('sapi_tran_getplayerfriendsonline_exp') ); ?>" /></td>
-          </tr>
-          <tr valign="top">
-            <th scope="row">cache responses from <strong>getplayerfriendsonlinexbox/</strong> for:</th>
-            <td><input type="text" name="sapi_tran_getplayerfriendsonlinexbox_exp" value="<?php echo esc_attr( get_option('sapi_tran_getplayerfriendsonlinexbox_exp') ); ?>" /></td>
           </tr>
           <tr valign="top">
             <th scope="row">cache responses from <strong>getgodranks/</strong> for:</th>
@@ -581,62 +571,6 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     function getFriends() { 
       $funcargs = func_get_args();
       return call_user_func_array("get_friends", $funcargs);
-    }
-    /**
-    * Get Online Friends (PC)
-    * /getfriends[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{player}
-    * Returns the Smite User names of each of the player’s friends that are currently online (PC platform).
-    **/
-    public function get_player_friends_online($player_id=false) {
-      // method variables
-      $apiMethod = 'getplayerfriendsonline';
-      if ( !$player_id ) {
-        return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
-      }
-      
-      // encapsulated variable refs
-      $baseURL = $this->baseURL;
-      $responseType = $this->responseType;
-      $devID = $this->devID;
-      $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id;
-      
-      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
-      return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
-    }
-    // use function get_friends as getPlayerFriendsOnline
-    function getPlayerFriendsOnline() { 
-      $funcargs = func_get_args();
-      return call_user_func_array("get_player_friends_online", $funcargs);
-    }
-    /**
-    * Get Online Friends (Xbox)
-    * /getfriends[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{playerXUID}/{playerFriendsXUID}
-    * Returns the Smite User names of each of the player’s friends that are currently online (Xbox platform).
-    **/
-    public function get_player_friends_online_xbox($player_xuid=false,$friend_xuids=false) {
-      // method variables
-      $apiMethod = 'getplayerfriendsonlinexbox';
-      if ( !$player_xuid || !$friend_xuids ) {
-        return $this->init_wp_error( 'Missing Argument', 'player_xuid and player_friends_xuids is required' );
-      }
-      
-      // encapsulated variable refs
-      $baseURL = $this->baseURL;
-      $responseType = $this->responseType;
-      $devID = $this->devID;
-      $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_xuid.'/'.$friend_xuids;
-      
-      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
-      return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
-    }
-    // use function get_friends as getPlayerFriendsOnlineXbox
-    function getPlayerFriendsOnlineXbox() { 
-      $funcargs = func_get_args();
-      return call_user_func_array("get_player_friends_online_xbox", $funcargs);
     }
     /**
     * Get Player
