@@ -52,7 +52,6 @@ function register_smiteapi_settings() {
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgodranks_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgods_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgodrecommendeditems_exp' );
-	register_setting( 'smiteapi-settings-group', 'sapi_tran_getgodskins_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getitems_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getmatchdetails_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getmatchplayerdetails_exp' );
@@ -127,10 +126,6 @@ function smiteapi_settings_page() {
           <tr valign="top">
             <th scope="row">cache responses from <strong>getgodrecommendeditems/</strong> for:</th>
             <td><input type="text" name="sapi_tran_getgodrecommendeditems_exp" value="<?php echo esc_attr( get_option('sapi_tran_getgodrecommendeditems_exp') ); ?>" /></td>
-          </tr>
-          <tr valign="top">
-            <th scope="row">cache responses from <strong>getgodskins/</strong> for:</th>
-            <td><input type="text" name="sapi_tran_getgodskins_exp" value="<?php echo esc_attr( get_option('sapi_tran_skins_exp') ); ?>" /></td>
           </tr>
           <tr valign="top">
             <th scope="row">cache responses from <strong>getitems/</strong> for:</th>
@@ -227,7 +222,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     // private function
     // create signature
     protected function create_signature( $methodString ) {
-      $inputString = $this->devID . $methodString . $this->authKey . date('YmdHis');
+      $inputString = $this->devID . $methodString . $this->authKey . gmdate('YmdHis');
       return md5( $inputString );
     }
     // get session token
@@ -245,7 +240,8 @@ if ( !class_exists( 'SmiteAPI' ) ) {
         // go get the session token
         // using wp_remote_get to retrieve the schedule information from the account.hirezstudios.com endpoints
         $apiMethod = 'createsession';
-        $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.date('YmdHis');
+        $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.gmdate('YmdHis');
+        error_log($url);
         $requestToken = wp_remote_get( $url );
         if ( !$requestToken['response']['code'] == 200 ) {
           // handle bad response
@@ -302,7 +298,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis');
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -330,7 +326,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$matchid;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$matchid;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -358,7 +354,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$matchid;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$matchid;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -386,7 +382,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$matchid;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$matchid;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -415,7 +411,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $devID = $this->devID;
       $authKey = $this->authKey;
       
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$lang;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$lang;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -444,7 +440,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $devID = $this->devID;
       $authKey = $this->authKey;
       
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$lang;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$lang;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -476,7 +472,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $devID = $this->devID;
       $authKey = $this->authKey;
       
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$god_id.'/'.$lang;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$god_id.'/'.$lang;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -486,38 +482,6 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     function getGodRecommendedItems() { 
       $funcargs = func_get_args();
       return call_user_func_array("get_god_recommended_items", $funcargs);
-    }
-    /**
-    * Get God Skins
-    * /getgodrecommendeditems[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{godid}/{languageCode}
-    * Returns the skin variants for a particular God.
-    **/
-    public function get_god_skins($god_id=null,$lang = 1) {
-      // method variables
-      $apiMethod = 'getgodskins';
-      if ( !$god_id ) {
-        return $this->init_wp_error( 'Missing Argument', 'God ID is required' );
-      }
-      if ( !$lang ) {
-        return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
-      }
-      
-      // encapsulated variable refs
-      $baseURL = $this->baseURL;
-      $responseType = $this->responseType;
-      $devID = $this->devID;
-      $authKey = $this->authKey;
-      
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$god_id.'/'.$lang;
-      
-      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
-      return $this->api_transaction($apiMethod.'_'.$god_id.'_'.$lang, $url, $transientExpiry);
-    }
-    // use function get_god_skins as getGodSkins
-    function getGodSkins() { 
-      $funcargs = func_get_args();
-      return call_user_func_array("get_god_skins", $funcargs);
     }
     /**
     * Get eSports Pro League Details
@@ -533,7 +497,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis');
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -561,7 +525,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -589,7 +553,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -623,7 +587,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
       
       // variables for extending the returned object
       $statusLabels = array(
@@ -661,7 +625,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -689,7 +653,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -719,7 +683,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$queue_id.'/'.$date.'/'.$hour;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$queue_id.'/'.$date.'/'.$hour;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -745,7 +709,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$queue_id.'/'.$tier.'/'.$season;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$queue_id.'/'.$tier.'/'.$season;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -770,7 +734,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$queue_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$queue_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -798,7 +762,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$player_id.'/'.$queue_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id.'/'.$queue_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -826,7 +790,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$search_string;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$search_string;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -854,7 +818,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$clan_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$clan_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -882,7 +846,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$clan_id;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$clan_id;
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
@@ -907,7 +871,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis');
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
       
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
       
