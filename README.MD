@@ -105,6 +105,7 @@ This instance, then, can be used for calling methods that return data analogous 
 | Joust3v3             | 448  |
 | ConquestLeague       | 451  |
 | ArenaLeague          | 452  |
+| Clash                | 466  |
 
 ##### Tier ID key
 
