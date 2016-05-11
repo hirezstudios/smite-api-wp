@@ -8,9 +8,9 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
  * Author: Hi-Rez Studios
  * License: Copyright 2015 Hi-Rez Studios
  */
- 
+
 // @author Coran Spicer
- 
+
 // set up admin options page
 if ( is_admin() ){ // admin actions
   add_action( 'admin_menu', 'smiteapi_create_menu' );
@@ -24,18 +24,18 @@ if ( is_admin() ){ // admin actions
 // custom capability bifurcates it from the admin role directly
 // this allows for separate capability assignment at your discretion
 function add_smiteapi_dev_cap() {
-  
+
   $role = get_role( 'administrator' );
   $role->add_cap( 'smiteapi_dev' );
-  
+
 }
 
 // create the dashboard menu item for plugin settings page
 function smiteapi_create_menu() {
-  
+
 	//create new top-level menu
 	add_menu_page('SMITE API WP Plugin Settings', 'SMITE API WP Settings', 'smiteapi_dev', 'smiteapi-settings', 'smiteapi_settings_page',plugins_url('/images/icon.png', __FILE__));
-	
+
 }
 
 
@@ -82,22 +82,22 @@ function smiteapi_settings_page() {
             <th scope="row">Dev ID</th>
             <td><input type="text" name="smiteapi_dev_id" value="<?php echo esc_attr( get_option('smiteapi_dev_id') ); ?>" /></td>
             </tr>
-             
+
             <tr valign="top">
             <th scope="row">Auth Key</th>
             <td><input type="text" name="smiteapi_auth_key" value="<?php echo esc_attr( get_option('smiteapi_auth_key') ); ?>" /></td>
             </tr>
-            
+
             <tr valign="top">
             <th scope="row">Session Token Expiry <br /><small>(in minutes)</small></th>
             <td><input type="text" name="smiteapi_sessiontoken_expiry" value="<?php echo esc_attr( get_option('smiteapi_sessiontoken_expiry', 15) ); ?>" /></td>
             </tr>
         </table>
-        
+
         <?php submit_button(); ?>
-        
+
         <h3>API Endpoint Caching Expiration times ( in minutes )</h3>
-        
+
         <table class="form-table">
           <tr valign="top">
             <th scope="row">cache responses from <strong>getdataused/</strong> for:</th>
@@ -143,7 +143,7 @@ function smiteapi_settings_page() {
             <th scope="row">cache responses from <strong>getmatchidsbyqueue/</strong> for:</th>
             <td><input type="text" name="sapi_tran_getmatchidsbyqueue_exp" value="<?php echo esc_attr( get_option('sapi_tran_getmatchidsbyqueue_exp') ); ?>" /></td>
           </tr>
-          
+
           <tr valign="top">
             <th scope="row">cache responses from <strong>getleagueleaderboard/</strong> for:</th>
             <td><input type="text" name="sapi_tran_getleagueleaderboard_exp" value="<?php echo esc_attr( get_option('sapi_tran_getleagueleaderboard_exp') ); ?>" /></td>
@@ -185,12 +185,12 @@ function smiteapi_settings_page() {
             <td><input type="text" name="sapi_tran_searchteams_exp" value="<?php echo esc_attr( get_option('sapi_tran_searchteams_exp') ); ?>" /></td>
           </tr>
         </table>
-        
+
         <?php submit_button(); ?>
-    
+
     </form>
   </div>
-  <?php 
+  <?php
   }
 
 /**
@@ -198,26 +198,48 @@ function smiteapi_settings_page() {
 **/
 if ( !class_exists( 'SmiteAPI' ) ) {
   class SmiteAPI {
-    function __construct() {
+
+    function __construct($platform) {
       // stub for adding any necessary hooks
       //add_action( 'hook_name', array( &$this, 'my_hook_implementation' ) );
-      
+
+      $platform = ($platform) ? $platform: 'pc';
+
       // do init stuff here
       $this->devID   = get_option('smiteapi_dev_id');
       $this->authKey = get_option('smiteapi_auth_key');
+      $this->prefPlatform = $platform;
+
+      switch($platform) {
+        case "pc":
+          $this->baseURL = 'http://api.smitegame.com/smiteapi.svc';
+          break;
+        case "xbox":
+          $this->baseURL = 'http://api.xbox.smitegame.com/smiteapi.svc';
+          break;
+        case "ps4":
+          $this->baseURL = 'http://api.ps4.smitegame.com/smiteapi.svc';
+          break;
+        case "mac":
+          $this->baseURL = 'http://api.mac.smitegame.com/smiteapi.svc';
+          break;
+        default:
+          $this->baseURL = 'http://api.smitegame.com/smiteapi.svc';
+          break;
+      }
     }
 
     function my_hook_implementation() {
       // sample hook callback placeholder
     }
-    
+
     // private variables
-    protected $baseURL = 'http://api.smitegame.com/smiteapi.svc';
     protected $responseType = 'Json'; // '-_-
     protected $devID;
     protected $authKey;
     protected $validSessionToken;
-    
+    protected $prefPlatform;
+
 
     // private function
     // create signature
@@ -232,9 +254,10 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      if ( get_transient('smiteapi_session_token') ) {
+      $prefPlatform = $this->prefPlatform;
+      if ( get_transient('smiteapi_session_token_'.$prefPlatform) ) {
         // valid session token exists in transient cache
-        $this->validSessionToken = get_transient('smiteapi_session_token');
+        $this->validSessionToken = get_transient('smiteapi_session_token_'.$prefPlatform);
       } else {
         // invalid session token
         // go get the session token
@@ -254,7 +277,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
           } else {
             $sessionToken = $responseObj->session_id;
             $this->validSessionToken = $sessionToken;
-            set_transient( 'smiteapi_session_token', $sessionToken, get_option( 'smiteapi_sessiontoken_expiry', 15 ) * 60 );
+            set_transient( 'smiteapi_session_token_'.$prefPlatform, $sessionToken, get_option( 'smiteapi_sessiontoken_expiry', 15 ) * 60 );
           }
         }
       }
@@ -282,7 +305,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     protected function init_wp_error( $errorMsg, $data ) {
       return new WP_Error( 'smiteapi_error', $errorMsg, $data );
     }
-    
+
     // public methods
     /**
     * Get Data Used
@@ -292,20 +315,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     public function get_data_used() {
       // method variables
       $apiMethod = 'getdataused';
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod, $url, $transientExpiry);
     }
     // use function get_data_used as getDataUsed
-    function getDataUsed() { 
+    function getDataUsed() {
       $funcargs = func_get_args();
       return call_user_func_array("get_data_used", $funcargs);
     }
@@ -320,20 +343,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$matchid ) {
         return $this->init_wp_error( 'Missing Argument', 'match_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$matchid;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$matchid, $url, $transientExpiry);
     }
     // use function get_demo_details as getDemoDetails
-    function getDemoDetails() { 
+    function getDemoDetails() {
       $funcargs = func_get_args();
       return call_user_func_array("get_demo_details", $funcargs);
     }
@@ -348,20 +371,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$matchid ) {
         return $this->init_wp_error( 'Missing Argument', 'match_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$matchid;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$matchid, $url, $transientExpiry);
     }
     // use function get_match_details as getMatchDetails
-    function getMatchDetails() { 
+    function getMatchDetails() {
       $funcargs = func_get_args();
       return call_user_func_array("get_match_details", $funcargs);
     }
@@ -376,20 +399,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$matchid ) {
         return $this->init_wp_error( 'Missing Argument', 'match_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$matchid;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$matchid, $url, $transientExpiry);
     }
     // use function get_match_player_details as getMatchPlayerDetails
-    function getMatchPlayerDetails() { 
+    function getMatchPlayerDetails() {
       $funcargs = func_get_args();
       return call_user_func_array("get_match_player_details", $funcargs);
     }
@@ -404,21 +427,21 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$lang ) {
         return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      
+
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$lang;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$lang, $url, $transientExpiry);
     }
     // use function get_gods as getGods
-    function getGods() { 
+    function getGods() {
       $funcargs = func_get_args();
       return call_user_func_array("get_gods", $funcargs);
     }
@@ -433,21 +456,21 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$lang ) {
         return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      
+
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$lang;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$lang, $url, $transientExpiry);
     }
     // use function get_items as getItems
-    function getItems() { 
+    function getItems() {
       $funcargs = func_get_args();
       return call_user_func_array("get_items", $funcargs);
     }
@@ -465,23 +488,55 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$lang ) {
         return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
-      
+
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$god_id.'/'.$lang;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$god_id.'_'.$lang, $url, $transientExpiry);
     }
     // use function get_god_recommended_items as getGodRecommendedItems
-    function getGodRecommendedItems() { 
+    function getGodRecommendedItems() {
       $funcargs = func_get_args();
       return call_user_func_array("get_god_recommended_items", $funcargs);
+    }
+    /**
+    * Get God Skins
+    * /getgodrecommendeditems[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{godid}/{languageCode}
+    * Returns the skin variants for a particular God.
+    **/
+    public function get_god_skins($god_id=null,$lang = 1) {
+      // method variables
+      $apiMethod = 'getgodskins';
+      if ( !$god_id ) {
+        return $this->init_wp_error( 'Missing Argument', 'God ID is required' );
+      }
+      if ( !$lang ) {
+        return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
+      }
+
+      // encapsulated variable refs
+      $baseURL = $this->baseURL;
+      $responseType = $this->responseType;
+      $devID = $this->devID;
+      $authKey = $this->authKey;
+
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.date('YmdHis').'/'.$god_id.'/'.$lang;
+
+      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
+
+      return $this->api_transaction($apiMethod.'_'.$god_id.'_'.$lang, $url, $transientExpiry);
+    }
+    // use function get_god_skins as getGodSkins
+    function getGodSkins() {
+      $funcargs = func_get_args();
+      return call_user_func_array("get_god_skins", $funcargs);
     }
     /**
     * Get eSports Pro League Details
@@ -491,20 +546,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     public function get_esports_pro_league_details() {
       // method variables
       $apiMethod = 'getesportsproleaguedetails';
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod, $url, $transientExpiry);
     }
     // use function get_esports_pro_league_details as getESportsProLeagueDetails
-    function getESportsProLeagueDetails() { 
+    function getESportsProLeagueDetails() {
       $funcargs = func_get_args();
       return call_user_func_array("get_esports_pro_league_details", $funcargs);
     }
@@ -519,20 +574,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$player_id ) {
         return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
     }
     // use function get_friends as getFriends
-    function getFriends() { 
+    function getFriends() {
       $funcargs = func_get_args();
       return call_user_func_array("get_friends", $funcargs);
     }
@@ -547,27 +602,27 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$player_id ) {
         return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
     }
     // use function get_player as getPlayer
-    function getPlayer() { 
+    function getPlayer() {
       $funcargs = func_get_args();
       return call_user_func_array("get_player", $funcargs);
     }
     /**
     * Get Player Status
     * /getplayerstatus[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{player}
-    * Returns player status as follows: 
+    * Returns player status as follows:
     *
     *   0 - Offline
     *   1 - In Lobby  (basically anywhere except god selection or in game)
@@ -581,14 +636,14 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$player_id ) {
         return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
-      
+
       // variables for extending the returned object
       $statusLabels = array(
         'Offline',
@@ -604,7 +659,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       return $playerStatus;
     }
     // use function get_player_status as getPlayerStatus
-    function getPlayerStatus() { 
+    function getPlayerStatus() {
       $funcargs = func_get_args();
       return call_user_func_array("get_player_status", $funcargs);
     }
@@ -619,20 +674,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$player_id ) {
         return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
     }
     // use function get_match_history as getMatchHistory
-    function getMatchHistory() { 
+    function getMatchHistory() {
       $funcargs = func_get_args();
       return call_user_func_array("get_match_history", $funcargs);
     }
@@ -647,27 +702,27 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$player_id ) {
         return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$player_id, $url, $transientExpiry);
     }
     // use function get_god_ranks as getGodRanks
-    function getGodRanks() { 
+    function getGodRanks() {
       $funcargs = func_get_args();
       return call_user_func_array("get_god_ranks", $funcargs);
     }
     /**
     * Get Match IDs by Queue
     * /getmatchidsbyqueue[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{queue}/{date}/{hour}
-    * Lists all Match IDs for a particular Match Queue; useful for API developers interested in constructing data by Queue. 
+    * Lists all Match IDs for a particular Match Queue; useful for API developers interested in constructing data by Queue.
     * To limit the data returned, an {hour} parameter was added (valid values: 0 - 23). This hour value is based on GMT timezone.
     * An {hour} parameter of -1 represents the entire day, but be warned that this may be more data than we can return for
     * certain queues.  Also, a returned “active_flag” means that there is no match information/stats for the corresponding match.
@@ -677,20 +732,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       // method variables
       $apiMethod = 'getmatchidsbyqueue';
       $date = $dateArg ? $dateArg : date('Ymd');
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$queue_id.'/'.$date.'/'.$hour;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$queue_id.'_'.$date.'_'.$hour, $url, $transientExpiry);
     }
     // use function get_match_ids_by_queue as getMatchIDsByQueue
-    function getMatchIDsByQueue() { 
+    function getMatchIDsByQueue() {
       $funcargs = func_get_args();
       return call_user_func_array("get_match_ids_by_queue", $funcargs);
     }
@@ -703,20 +758,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       // method variables
       $apiMethod = 'getleagueleaderboard';
       $season = $seasonArg ? $seasonArg : date('n');
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$queue_id.'/'.$tier.'/'.$season;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$queue_id.'_'.$tier.'_'.$season, $url, $transientExpiry);
     }
     // use function get_league_leaderboard as getLeagueLeaderboard
-    function getLeagueLeaderboard() { 
+    function getLeagueLeaderboard() {
       $funcargs = func_get_args();
       return call_user_func_array("get_league_leaderboard", $funcargs);
     }
@@ -728,20 +783,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     public function get_league_seasons($queue_id=451) {
       // method variables
       $apiMethod = 'getleagueseasons';
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$queue_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$queue_id, $url, $transientExpiry);
     }
     // use function get_league_seasons as getLeagueSeasons
-    function getLeagueSeasons() { 
+    function getLeagueSeasons() {
       $funcargs = func_get_args();
       return call_user_func_array("get_league_seasons", $funcargs);
     }
@@ -756,20 +811,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$player_id ) {
         return $this->init_wp_error( 'Missing Argument', 'player_name or account_id is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$player_id.'/'.$queue_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$player_id.'_'.$queue_id, $url, $transientExpiry);
     }
     // use function get_queue_stats as getQueueStatus
-    function getQueueStatus() { 
+    function getQueueStatus() {
       $funcargs = func_get_args();
       return call_user_func_array("get_queue_stats", $funcargs);
     }
@@ -784,20 +839,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$search_string ) {
         return $this->init_wp_error( 'Missing Argument', 'a search string is required' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$search_string;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$search_string, $url, $transientExpiry);
     }
     // use function search_teams as searchTerms
-    function searchTerms() { 
+    function searchTerms() {
       $funcargs = func_get_args();
       return call_user_func_array("search_teams", $funcargs);
     }
@@ -812,20 +867,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$clan_id ) {
         return $this->init_wp_error( 'Missing Argument', 'a clan_id is required.' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$clan_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$clan_id, $url, $transientExpiry);
     }
     // use function get_team_details as getTeamDetails
-    function getTeamDetails() { 
+    function getTeamDetails() {
       $funcargs = func_get_args();
       return call_user_func_array("get_team_details", $funcargs);
     }
@@ -840,20 +895,20 @@ if ( !class_exists( 'SmiteAPI' ) ) {
       if ( !$clan_id ) {
         return $this->init_wp_error( 'Missing Argument', 'a clan_id is required.' );
       }
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis').'/'.$clan_id;
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod.'_'.$clan_id, $url, $transientExpiry);
     }
     // use function get_team_players as getTeamPlayers
-    function getTeamPlayers() { 
+    function getTeamPlayers() {
       $funcargs = func_get_args();
       return call_user_func_array("get_team_players", $funcargs);
     }
@@ -865,24 +920,24 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     public function get_top_matches() {
       // method variables
       $apiMethod = 'gettopmatches';
-      
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
       $devID = $this->devID;
       $authKey = $this->authKey;
       $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
-      
+
       $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
-      
+
       return $this->api_transaction($apiMethod, $url, $transientExpiry);
     }
     // use function get_top_matches as getTopMatches
-    function getTopMatches() { 
+    function getTopMatches() {
       $funcargs = func_get_args();
       return call_user_func_array("get_top_matches", $funcargs);
     }
-    
+
   }
 }
 
