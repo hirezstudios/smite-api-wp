@@ -56,6 +56,7 @@ function register_smiteapi_settings() {
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getmatchdetails_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getmatchplayerdetails_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getmatchidsbyqueue_exp' );
+	register_setting( 'smiteapi-settings-group', 'sapi_tran_getleaderboard_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getleagueleaderboard_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getleagueseasons_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getmatchhistory_exp' );
@@ -144,6 +145,10 @@ function smiteapi_settings_page() {
             <td><input type="text" name="sapi_tran_getmatchidsbyqueue_exp" value="<?php echo esc_attr( get_option('sapi_tran_getmatchidsbyqueue_exp') ); ?>" /></td>
           </tr>
 
+		  <tr valign="top">
+            <th scope="row">cache responses from <strong>getleaderboard/</strong> for:</th>
+            <td><input type="text" name="sapi_tran_getleaderboard_exp" value="<?php echo esc_attr( get_option('sapi_tran_getleaderboard_exp') ); ?>" /></td>
+          </tr>
           <tr valign="top">
             <th scope="row">cache responses from <strong>getleagueleaderboard/</strong> for:</th>
             <td><input type="text" name="sapi_tran_getleagueleaderboard_exp" value="<?php echo esc_attr( get_option('sapi_tran_getleagueleaderboard_exp') ); ?>" /></td>
@@ -748,6 +753,31 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     function getMatchIDsByQueue() {
       $funcargs = func_get_args();
       return call_user_func_array("get_match_ids_by_queue", $funcargs);
+    }
+	 /**
+    * Get Leaderboard
+    * /getleaderboard[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}
+    * Returns the top players for a special event leaderboard.
+    **/
+    public function get_leaderboard() {
+      // method variables
+      $apiMethod = 'getleaderboard';
+    
+      // encapsulated variable refs
+      $baseURL = $this->baseURL;
+      $responseType = $this->responseType;
+      $devID = $this->devID;
+      $authKey = $this->authKey;
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
+
+      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
+
+      return $this->api_transaction($apiMethod, $url, $transientExpiry);
+    }
+    // use function get_leaderboard as getLeaderboard
+    function getLeaderboard() {
+      $funcargs = func_get_args();
+      return call_user_func_array("get_leaderboard", $funcargs);
     }
     /**
     * Get League Leaderboard
