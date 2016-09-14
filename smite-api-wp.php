@@ -204,7 +204,7 @@ function smiteapi_settings_page() {
 if ( !class_exists( 'SmiteAPI' ) ) {
   class SmiteAPI {
 
-    function __construct($platform) {
+    function __construct($platform = 'pc') {
       // stub for adding any necessary hooks
       //add_action( 'hook_name', array( &$this, 'my_hook_implementation' ) );
 
@@ -762,7 +762,7 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     public function get_leaderboard() {
       // method variables
       $apiMethod = 'getleaderboard';
-    
+
       // encapsulated variable refs
       $baseURL = $this->baseURL;
       $responseType = $this->responseType;
