@@ -203,15 +203,15 @@ function smiteapi_settings_page() {
             <td><input type="text" name="sapi_tran_getesportsproleaguedetails_exp" value="<?php echo esc_attr( get_option('sapi_tran_getesportsproleaguedetails_exp') ); ?>" /></td>
           </tr>
           <tr valign="top">
-            <th scope="row">cache responses from <strong>getHZEsportsTeamDetails/</strong> for:</th>
+            <th scope="row">cache responses from <strong>getHzEsportsTeamDetails/</strong> for:</th>
             <td><input type="text" name="sapi_tran_gethzesportsteamdetails_exp" value="<?php echo esc_attr( get_option('sapi_tran_gethzesportsteamdetails_exp') ); ?>" /></td>
           </tr>
           <tr valign="top">
-            <th scope="row">cache responses from <strong>getHZEsportsTeamDetails/</strong> for:</th>
+            <th scope="row">cache responses from <strong>getHzEsportsLeaguePlayerStats/</strong> for:</th>
             <td><input type="text" name="sapi_tran_gethzesportsleagueplayerstats_exp" value="<?php echo esc_attr( get_option('sapi_tran_gethzesportsleagueplayerstats_exp') ); ?>" /></td>
           </tr>
           <tr valign="top">
-            <th scope="row">cache responses from <strong>getHZEsportsTeamDetails/</strong> for:</th>
+            <th scope="row">cache responses from <strong>getHzEsportsMatchStats/</strong> for:</th>
             <td><input type="text" name="sapi_tran_gethzesportsmatchstats_exp" value="<?php echo esc_attr( get_option('sapi_tran_gethzesportsmatchstats_exp') ); ?>" /></td>
           </tr>
         </table>
