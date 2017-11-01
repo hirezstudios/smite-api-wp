@@ -66,7 +66,9 @@ function register_smiteapi_settings() {
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getteamdetails_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_getteamplayers_exp' );
 	register_setting( 'smiteapi-settings-group', 'sapi_tran_gettopmatches_exp' );
-	register_setting( 'smiteapi-settings-group', 'sapi_tran_searchteams_exp' );
+  register_setting( 'smiteapi-settings-group', 'sapi_tran_searchteams_exp' );
+  register_setting( 'smiteapi-settings-group', 'sapi_tran_getesportsleagues_exp' );
+  register_setting( 'smiteapi-settings-group', 'sapi_tran_getesportsproleaguedetails_exp' );
 }
 
 function smiteapi_settings_page() {
@@ -188,6 +190,14 @@ function smiteapi_settings_page() {
           <tr valign="top">
             <th scope="row">cache responses from <strong>searchteams/</strong> for:</th>
             <td><input type="text" name="sapi_tran_searchteams_exp" value="<?php echo esc_attr( get_option('sapi_tran_searchteams_exp') ); ?>" /></td>
+          </tr>
+          <tr valign="top">
+            <th scope="row">cache responses from <strong>getEsportsLeagues/</strong> for:</th>
+            <td><input type="text" name="sapi_tran_getesportsleagues_exp" value="<?php echo esc_attr( get_option('sapi_tran_getesportsleagues_exp') ); ?>" /></td>
+          </tr>
+          <tr valign="top">
+            <th scope="row">cache responses from <strong>getEsportsLeagueDetails/</strong> for:</th>
+            <td><input type="text" name="sapi_tran_getesportsproleaguedetails_exp" value="<?php echo esc_attr( get_option('sapi_tran_getesportsproleaguedetails_exp') ); ?>" /></td>
           </tr>
         </table>
 
@@ -449,6 +459,64 @@ if ( !class_exists( 'SmiteAPI' ) ) {
     function getGods() {
       $funcargs = func_get_args();
       return call_user_func_array("get_gods", $funcargs);
+    }
+    /**
+    * Get Esports Leagues
+    * /getesportsleagues[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{languageCode}
+    * Returns esports leagues.
+    **/
+    public function get_esports_leagues($lang = 1) {
+      // method variables
+      $apiMethod = 'getesportsleagues';
+      if ( !$lang ) {
+        return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
+      }
+
+      // encapsulated variable refs
+      $baseURL = $this->baseURL;
+      $responseType = $this->responseType;
+      $devID = $this->devID;
+      $authKey = $this->authKey;
+
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
+
+      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
+      error_log($url);
+      return $this->api_transaction($apiMethod.'_'.$lang, $url, $transientExpiry);
+    }
+    // use function get_gods as getGods
+    function getEsportsLeagues() {
+      $funcargs = func_get_args();
+      return call_user_func_array("get_esports_leagues", $funcargs);
+    }
+    /**
+    * Get Esports League Details
+    * /getesportsleagues[ResponseFormat]/{developerId}/{signature}/{session}/{timestamp}/{languageCode}
+    * Returns esports leagues.
+    **/
+    public function get_esports_league_details($lang = 1) {
+      // method variables
+      $apiMethod = 'getesportsproleaguedetails';
+      if ( !$lang ) {
+        return $this->init_wp_error( 'Missing Argument', 'language designator is required' );
+      }
+
+      // encapsulated variable refs
+      $baseURL = $this->baseURL;
+      $responseType = $this->responseType;
+      $devID = $this->devID;
+      $authKey = $this->authKey;
+
+      $url = $baseURL.'/'.$apiMethod.$responseType.'/'.$devID.'/'.$this->create_signature( $apiMethod ).'/'.$this->get_session_token().'/'.gmdate('YmdHis');
+
+      $transientExpiry = get_option( 'sapi_tran_'.$apiMethod.'_exp', 60 );
+      error_log($url);
+      return $this->api_transaction($apiMethod.'_'.$lang, $url, $transientExpiry);
+    }
+    // use function get_gods as getGods
+    function getEsportsLeagueDetails() {
+      $funcargs = func_get_args();
+      return call_user_func_array("get_esports_league_details", $funcargs);
     }
     /**
     * Get Items
